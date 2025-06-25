@@ -1,15 +1,28 @@
-# Intermediate or auto-generated outputs
-*.csv
-*.html
-*.pdf
-*.Rhistory
-*.RData
-*.Rproj
-*.Rproj.user/
 
-# Python cache
-__pycache__/
-*.pyc
+# Bioinformatics raw and output data
+*.fastq
+*.fastq.gz
+*.sra
+*.bam
+*.sam
+*.bai
+*.fa
+*.gtf
 
-# macOS system files
+# Directories with large/intermediate files
+preprocessing/raw_data/
+trimmed_data/
+alignments/
+multiqc/
+salmon_output/
+salmon_index/
+
+# Jupyter notebook checkpoints
+*.ipynb_checkpoints
+
+# System & environment files
 .DS_Store
+.env
+
+
+
