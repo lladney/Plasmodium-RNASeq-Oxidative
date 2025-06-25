@@ -16,7 +16,7 @@ os.environ['PATH'] += (
 db = SRAweb()
 
 # Replace with a valid GEO Series accession
-geo_id = "GSE41637"
+geo_id = "GSE189034"
 
 try:
     # Try to fetch SRA project(s) from GEO
@@ -52,8 +52,10 @@ try:
 
             # Extract run accessions (SRR IDs)
             # sra_runs = metadata['run_accession'].tolist()
-            # Test with one SRR
-            sra_runs = ["SRR390728"]
+            sra_runs = [
+                "SRR16966869", "SRR16966870", "SRR16966871",
+                "SRR16966872", "SRR16966873", "SRR16966874"
+            ]
 
             
             # Create directories
