@@ -1,0 +1,8 @@
+
+
+pysradb
+pandas
+multiqc
+biopython
+
+
