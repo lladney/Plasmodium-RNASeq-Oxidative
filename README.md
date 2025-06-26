@@ -100,5 +100,5 @@ This will produce:
 - PCA_plot.png: Principal component analysis of samples
 
 ## Notes
-* Raw data files and large intermediate results are .gitignored
+* Raw data files and large intermediate results are excluded via ```.gitignore```
 * This pipeline was developed and tested on macOS 10.15 with Conda and R 4.3+
