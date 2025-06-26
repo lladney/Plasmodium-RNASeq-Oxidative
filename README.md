@@ -106,7 +106,14 @@ This project uses bulk RNA-seq data from [SRP346589](https://www.ncbi.nlm.nih.go
 - **Title:** Transcriptional response of *Plasmodium falciparum* to peroxide antimalarials  
 - **SRA Accession:** SRP346589  
 - **Organism:** *Plasmodium falciparum* (3D7 strain)  
-- **Conditions:** DMSO (control) vs. peroxide antimalarials (e.g., OZ277, OZ439) at multiple timepoints  
+- **Conditions:** DMSO (control) vs. peroxide antimalarials (e.g., OZ277, OZ439) at multiple timepoints
+- **SRA Runs Used:**  
+  - **SRR16966869** – DMSO control, 3 hr  
+  - **SRR16966870** – OZ277 treatment, 3 hr  
+  - **SRR16966871** – OZ439 treatment, 3 hr  
+  - **SRR16966872** – DMSO control, 6 hr  
+  - **SRR16966873** – OZ277 treatment, 6 hr  
+  - **SRR16966874** – OZ439 treatment, 6 hr    
 - **Rationale:** Chosen to explore oxidative stress–induced gene expression, the dataset includes high-quality paired-end bulk RNA-seq suitable for differential expression and functional enrichment analysis. Sample metadata is organized in `SRP346589_metadata.csv`.
 
 ### Citation
