@@ -99,6 +99,34 @@ This will produce:
 - heatmap_top20_DEGs.png: Heatmap of top 20 DEGs
 - PCA_plot.png: Principal component analysis of samples
 
+## Dataset
+## Dataset
+
+This project uses bulk RNA-seq data from [SRP346589](https://www.ncbi.nlm.nih.gov/sra?term=SRP346589), profiling *Plasmodium falciparum* parasites exposed to oxidative stress.
+
+- **Title:** Transcriptional response of *Plasmodium falciparum* to peroxide antimalarials  
+- **SRA Accession:** SRP346589  
+- **Organism:** *Plasmodium falciparum* (3D7 strain)  
+- **Conditions:** DMSO (control) vs. peroxide antimalarials (e.g., OZ277, OZ439) at multiple timepoints  
+- **Rationale:** Chosen to explore oxidative stress–induced gene expression, the dataset includes high-quality paired-end bulk RNA-seq suitable for differential expression and functional enrichment analysis. Sample metadata is organized in `SRP346589_metadata.csv`.
+
+### Citation
+
+**PubMed (APA format):**  
+Bruning-Richardson, A., Coomes, D., Crespo, M. P., Bottrill, A. R., Wilkinson, S. R., & Ward, S. A. (2022). *The transcriptional response of Plasmodium falciparum to peroxide antimalarials*. *Frontiers in Cellular and Infection Microbiology, 12*, 841957. https://doi.org/10.3389/fcimb.2022.841957
+
+**BibTeX:**
+```bibtex
+@article{BruningRichardson2022Peroxide,
+  author  = {Bruning-Richardson, A. and Coomes, D. and Crespo, M. P. and Bottrill, A. R. and Wilkinson, S. R. and Ward, S. A.},
+  title   = {The transcriptional response of Plasmodium falciparum to peroxide antimalarials},
+  journal = {Frontiers in Cellular and Infection Microbiology},
+  year    = {2022},
+  volume  = {12},
+  pages   = {841957},
+  doi     = {10.3389/fcimb.2022.841957}
+}
+```
 ## Notes
 * Raw data files and large intermediate results are excluded via ```.gitignore```
 * This pipeline was developed and tested on macOS 10.15 with Conda and R 4.3+
