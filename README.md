@@ -100,7 +100,6 @@ This will produce:
 - PCA_plot.png: Principal component analysis of samples
 
 ## Dataset
-## Dataset
 
 This project uses bulk RNA-seq data from [SRP346589](https://www.ncbi.nlm.nih.gov/sra?term=SRP346589), profiling *Plasmodium falciparum* parasites exposed to oxidative stress.
 
