@@ -95,9 +95,15 @@ DGE_Analysis_DESeq2.R
 ```	
 This will produce: 
 - deseq2_results.csv: Differential expression output
+  
 - volcano_plot.png: Volcano plot of DEGs
+  ![volcano_plot.png](dgeanalysis/volcano_plot.png)
+  
 - heatmap_top20_DEGs.png: Heatmap of top 20 DEGs
+  ![heatmap_top20_DEGs.png](dgeanalysis/heatmap_top20_DEGs.png)
+  
 - PCA_plot.png: Principal component analysis of samples
+  ![PCA_plot](dgeanalysis/PCA_plot.png)
 
 ## Dataset
 
