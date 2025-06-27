@@ -72,11 +72,11 @@ Go to the preprocessing/ directory and run:
 python Preprocessing_Pipeline_1.py
 ```
 This will perform: 
-- GEO/SRA Metadata Fetching
-- FASTQ Download
-- Adapter Trimming with Cutadapt
-- Quality Control with FastQC
-- MultiQC Summary
+1. GEO/SRA Metadata Fetching
+2. FASTQ Download
+3. Adapter Trimming with Cutadapt
+4. Quality Control with FastQC
+5. MultiQC Summary
 
 ### Step 2:  *QUANTIFICATION*
 Go to the quantification/ directory and run:
@@ -84,9 +84,9 @@ Go to the quantification/ directory and run:
 python Alignment_Quantification_2.py
 ```
 This will: 
-- Build a Salmon Index
-- Quantify transcript expression
-- Generate gene-level count matrix and metadata CSV
+1. Build a Salmon Index
+2. Quantify transcript expression
+3. Generate gene-level count matrix and metadata CSV
 
 ### Step 3:  *DIFFERENTIAL EXPRESSION ANALYSIS*
 Go to the dgeanalysis/ directory and run:
@@ -94,15 +94,19 @@ Go to the dgeanalysis/ directory and run:
 Rscript DGE_Analysis_DESeq2.R
 ```	
 This will produce: 
-- deseq2_results.csv: Differential expression output
-  
-- volcano_plot.png: Volcano plot of DEGs
+1. Differential expression output
+   
+   ```deseq2_results.csv```
+
+2. Volcano plot of DEGs (volcano_plot.png)
+   
   ![volcano_plot.png](dgeanalysis/volcano_plot.png)
-  
-- heatmap_top20_DEGs.png: Heatmap of top 20 DEGs
+
+3. Heatmap of top 20 DEGs (heatmap_top20_DEGs.png)
+   
   ![heatmap_top20_DEGs.png](dgeanalysis/heatmap_top20_DEGs.png)
   
-- PCA_plot.png: Principal component analysis of samples
+4. Principal component analysis of samples (PCA_plot.png) 
   ![PCA_plot](dgeanalysis/PCA_plot.png)
 
 ## Dataset
