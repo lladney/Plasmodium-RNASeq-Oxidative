@@ -43,7 +43,7 @@ git clone https://github.com/yourusername/plasmodium-rnaseq-pipeline.git
 cd plasmodium-rnaseq-pipeline
 ```  
 
-2. Create a Conda environment:
+2. Create and activate a Conda environment:
 ```bash
 conda create -n plasmodium_env python=3.10
 conda activate plasmodium_env
@@ -69,7 +69,7 @@ pip install -r requirements.txt
 ### Step 1:  *PREPROCESSING*
 Go to the preprocessing/ directory and run: 
 ```python 
-Preprocessing_Pipeline_1.py
+python Preprocessing_Pipeline_1.py
 ```
 This will perform: 
 - GEO/SRA Metadata Fetching
@@ -81,7 +81,7 @@ This will perform:
 ### Step 2:  *QUANTIFICATION*
 Go to the quantification/ directory and run:
 ```python
-Alignment_Quantification_2.py
+python Alignment_Quantification_2.py
 ```
 This will: 
 - Build a Salmon Index
@@ -90,8 +90,8 @@ This will:
 
 ### Step 3:  *DIFFERENTIAL EXPRESSION ANALYSIS*
 Go to the dgeanalysis/ directory and run:
-```Rscript
-DGE_Analysis_DESeq2.R
+```
+Rscript DGE_Analysis_DESeq2.R
 ```	
 This will produce: 
 - deseq2_results.csv: Differential expression output
