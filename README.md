@@ -8,7 +8,7 @@ A pipeline for RNA-seq analysis of oxidative stress responses in Plasmodium, fea
 
 ## Project Structure
 ```
-plasmodium-rnaseq-pipeline/
+Plasmodium-RNASeq-Oxidative/
 ├── preprocessing/                    # Step 1: Download, trim, and QC raw FASTQ files
 │   ├── Preprocessing_Pipeline_1.py   # Python script for SRA download + trimming + QC
 │   ├── SRP346589_metadata.csv        # Metadata file from SRA/GEO
