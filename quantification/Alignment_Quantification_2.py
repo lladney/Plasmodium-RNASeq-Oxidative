@@ -47,7 +47,7 @@ if not tx2gene_path.exists():
                 gene_id = header.split(".")[0]
                 tx2gene.append((header, gene_id))
     pd.DataFrame(tx2gene, columns=["TXNAME", "GENEID"]).to_csv(tx2gene_path, index=False)
-    print(f"✅ Saved: {tx2gene_path}")
+    print(f"Saved: {tx2gene_path}")
 
 # ------------ RUN SALMON QUANTIFICATION ------------ #
 
@@ -58,7 +58,7 @@ for sample in sample_names:
     output_dir = salmon_out_dir / sample
 
     if not r1.exists() or not r2.exists():
-        raise FileNotFoundError(f"❌ Could not find paired-end FASTQ files: {r1}, {r2}")
+        raise FileNotFoundError(f"Could not find paired-end FASTQ files: {r1}, {r2}")
 
     quant_cmd = [
         "salmon", "quant",
@@ -72,7 +72,7 @@ for sample in sample_names:
     ]
 
     subprocess.run(quant_cmd, check=True)
-    print(f"✅ Quantification complete for {sample}")
+    print(f"Quantification complete for {sample}")
 
 # ------------ BUILD METADATA ------------ #
 
@@ -86,11 +86,11 @@ metadata.index.name = "sample"
 metadata_path = quant_dir / "metadata.csv"
 metadata.to_csv(metadata_path)
 
-print(f"✅ Metadata saved to {metadata_path}")
+print(f"Metadata saved to {metadata_path}")
 
 # ------------ BUILD COUNT MATRIX (using tx2gene) ------------ #
 
-print("📊 Building gene-level count matrix using tx2gene.csv...")
+print("Building gene-level count matrix using tx2gene.csv...")
 tx2gene_df = pd.read_csv(tx2gene_path, names=["TXNAME", "GENEID"])
 
 count_dict = {}
@@ -118,4 +118,4 @@ for sample in sample_names:
 count_matrix.index.name = "gene"
 count_matrix_path = quant_dir / "count_matrix.csv"
 count_matrix.to_csv(count_matrix_path)
-print(f"✅ Gene-level count matrix saved to {count_matrix_path}")
+print(f"Gene-level count matrix saved to {count_matrix_path}")
