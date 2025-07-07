@@ -64,6 +64,10 @@ pip install -r requirements.txt
    ```bash
    conda install -c bioconda fastqc cutadapt salmon multiqc
 
+   Install SRA Toolkit (required for FASTQ downloads via pysradb):
+   ```bash
+   conda install -c bioconda sra-tools -y
+
 ## Running the Pipeline
 
 ### Step 1:  *PREPROCESSING*
