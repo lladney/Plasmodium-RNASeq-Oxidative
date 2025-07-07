@@ -133,7 +133,7 @@ This project uses bulk RNA-seq data from [SRP346589](https://www.ncbi.nlm.nih.go
 ### Citation
 
 **PubMed (APA format):**  
-Bruning-Richardson, A., Coomes, D., Crespo, M. P., Bottrill, A. R., Wilkinson, S. R., & Ward, S. A. (2022). *The transcriptional response of Plasmodium falciparum to peroxide antimalarials*. *Frontiers in Cellular and Infection Microbiology, 12*, 841957. https://doi.org/10.3389/fcimb.2022.841957
+Bruning-Richardson, A., Coomes, D., Crespo, M. P., Bottrill, A. R., Wilkinson, S. R., & Ward, S. A. (2022). *The transcriptional response of Plasmodium falciparum to peroxide antimalarials*. *Frontiers in Cellular and Infection Microbiology, 12*, 841957. 
 
 ## Notes
 * Raw data files and large intermediate results are excluded via ```.gitignore```
