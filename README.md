@@ -63,7 +63,7 @@ pip install -r requirements.txt
    You can install them all at once:
    ```bash
    conda install -c bioconda fastqc cutadapt salmon multiqc
-
+   ```
    Install SRA Toolkit (required for FASTQ downloads via pysradb):
    ```bash
    conda install -c bioconda sra-tools -y
