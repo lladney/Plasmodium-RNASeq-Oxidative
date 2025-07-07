@@ -39,7 +39,7 @@ plasmodium-rnaseq-pipeline/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/plasmodium-rnaseq-pipeline.git
+git clone https://github.com/lladney/plasmodium-rnaseq-pipeline.git
 cd plasmodium-rnaseq-pipeline
 ```  
 
