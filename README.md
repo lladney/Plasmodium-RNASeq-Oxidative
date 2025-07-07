@@ -39,8 +39,8 @@ plasmodium-rnaseq-pipeline/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/lladney/plasmodium-rnaseq-pipeline.git
-cd plasmodium-rnaseq-pipeline
+git clone https://github.com/lladney/Plasmodium-RNASeq-Oxidative.git
+cd Plasmodium-RNASeq-Oxidative
 ```  
 
 2. Create and activate a Conda environment:
