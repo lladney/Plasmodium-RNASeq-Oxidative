@@ -1,8 +1,12 @@
-import os
-import subprocess
-import pandas as pd
-from pathlib import Path
-import shutil
+# Plasmodium RNA-seq Analysis for Oxidative Stress Profiling
+# Step 2: Quantify with Salmon and summarize results for DE analysis
+
+# LIBRARIES
+import os                                                         # os = to interact with operating system
+import pandas as pd                                               # pandas = to conduct data analysis/manipulation
+import subprocess                                                 # subprocess = to run external commands from Python (i.e., Salmon)
+import shutil                                                     # shutil = to verify tools before running commands
+from pathlib import Path                                          # Path = to get file locations, create directories, exc.
 
 # ------------ CONFIGURATION ------------ #
 
