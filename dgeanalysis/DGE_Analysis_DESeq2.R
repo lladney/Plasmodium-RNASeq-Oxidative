@@ -1,38 +1,47 @@
-# Set default CRAN mirror
-cran_mirror <- "https://cloud.r-project.org"
+# Plasmodium RNA-seq Analysis for Oxidative Stress Profiling
+# Step 3: DEG Analysis and Visualization in R
 
-# Ensure mvtnorm is available (CRAN package)
-if (!requireNamespace("mvtnorm", quietly = TRUE)) {
-    install.packages("mvtnorm", repos = cran_mirror)
-}
+# SET CRAN MIRROR
+cran_mirror <- "https://cloud.r-project.org"                      # cran_mirror holds URL for CRAN mirror (server where R packages downloaded from)
 
-# Ensure BiocManager is available
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-    install.packages("BiocManager", repos = cran_mirror)
-}
+# MVTNORM INSTALLED? 
+if (!requireNamespace("mvtnorm", quietly = TRUE)) {               # Check if mvtnorm installed (true)
+    install.packages("mvtnorm", repos = cran_mirror)              # Install mvtnorm from CRAN mirror if not (false)      
+}                                                                 # Note: need mvtnorm for log2 fold change shrinkage in DESeq2
 
-# Install required Bioconductor packages if missing
-bioc_pkgs <- c("DESeq2", "apeglm", "pheatmap", "EnhancedVolcano")
-for (pkg in bioc_pkgs) {
-    if (!requireNamespace(pkg, quietly = TRUE)) {
-        BiocManager::install(pkg)
+# BIOCMANAGER INSTALLED?
+if (!requireNamespace("BiocManager", quietly = TRUE)) {           # Check if BiocManager installed (true)
+    install.packages("BiocManager", repos = cran_mirror)          # Install BiocManager from CRAN mirror if not (false)  
+}                                                                 # Note: need BiocManager to install/update packages from Bioconductor
+
+# BIOCONDUCTOR PACKAGES INSTALLED?
+                                                                  # Create vector of required packages
+bioc_pkgs <- c("DESeq2",                                          # DESeq2 = differential expression analysis
+               "apeglm",                                          # apeglm = shrinks log2 fold changes
+               "pheatmap",                                        # pheatmap = creates heatmaps
+               "EnhancedVolcano")                                 # EnhancedVolcano = creates volcano plots
+for (pkg in bioc_pkgs) {                                          # Loop through each package in the vector
+    if (!requireNamespace(pkg, quietly = TRUE)) {                 # Check if Bioconductor package installed (true)
+        BiocManager::install(pkg)                                 # Install package from BiocManager if not (false)   
     }
 }
 
-# Load libraries
-library(DESeq2)
-library(apeglm)
+# LIBRARIES
+library(DESeq2)                                                   # Load installed packages into memory
+library(apeglm)                                                
 library(pheatmap)
 library(EnhancedVolcano)
 
-# Set absolute paths
-count_path <- "/Users/laraladney/Documents/plasmodium-rnaseq-pipeline/quantification/count_matrix.csv"
-meta_path <- "/Users/laraladney/Documents/plasmodium-rnaseq-pipeline/quantification/metadata.csv"
-output_path <- "/Users/laraladney/Documents/plasmodium-rnaseq-pipeline/dgeanalysis/deseq2_results.csv"
+# SET ABSOLUTE PATHS (MODIFY AS NEEDED)
+count_path <- "/Users/laraladney/Documents/plasmodium-rnaseq-pipeline/quantification/count_matrix.csv" # Path to gene-level count matrix (quantification script)
+meta_path <- "/Users/laraladney/Documents/plasmodium-rnaseq-pipeline/quantification/metadata.csv"      # Path to sample metadata (quantification script)
+output_path <- "/Users/laraladney/Documents/plasmodium-rnaseq-pipeline/dgeanalysis/deseq2_results.csv" # Path to where DESeq2 results will be written as CSV
 
-# Load data
-counts <- read.csv(count_path, row.names = 1)
-metadata <- read.csv(meta_path, row.names = 1)
+# LOAD DATA
+counts <- read.csv(count_path,                                   # Load gene count matrix where: rows = genes, columns = samples
+                   row.names = 1)                                # Tell R that first column of gene IDs are row names not data
+metadata <- read.csv(meta_path,                                  # Load metadata mapping samples to experimental condition
+                     row.names = 1)                              # Tell R that first column of SRR IDs are row names not data
 
 # Ensure condition is a factor and ordered
 metadata$condition <- factor(metadata$condition, levels = c("control", "dozi_ko"))
