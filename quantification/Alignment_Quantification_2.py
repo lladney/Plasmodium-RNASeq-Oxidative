@@ -58,69 +58,79 @@ if not tx2gene_path.exists():                                     # Don't make f
 # RUN SALMON QUANTIFICATION
 print("Running Salmon quantification...")                         # Notify user
 for sample in sample_names:                                       # Loop through list of sample IDs
-    r1 = fastq_dir / f"trimmed_{sample}_1.fastq"                  # 
-    r2 = fastq_dir / f"trimmed_{sample}_2.fastq"
-    output_dir = salmon_out_dir / sample
+    r1 = fastq_dir / f"trimmed_{sample}_1.fastq"                  # Full path to read 1 .fastq
+    r2 = fastq_dir / f"trimmed_{sample}_2.fastq"                  # Full path to read 2 .fastq
+    output_dir = salmon_out_dir / sample                          # Create output directory for sample's Salmon results
 
-    if not r1.exists() or not r2.exists():
-        raise FileNotFoundError(f"Could not find paired-end FASTQ files: {r1}, {r2}")
+    if not r1.exists() or not r2.exists():                        # Check that both .fastq files exist
+        raise FileNotFoundError(f"Could not find paired-end FASTQ files: {r1}, {r2}") # Notify user if not
 
-    quant_cmd = [
-        "salmon", "quant",
-        "-i", str(index_dir),
-        "-l", "A",
-        "-1", str(r1),
-        "-2", str(r2),
-        "-p", "8",
-        "--validateMappings",
-        "-o", str(output_dir)
+    quant_cmd = [                                                 # Salmon quantification command
+        "salmon", "quant",                                        # Run salmon quant subcommand
+        "-i", str(index_dir),                                     # Input: path to Salmon transcriptome index
+        "-l", "A",                                                # Library type: A, for automatic detection of paired-end reads
+        "-1", str(r1),                                            # Path to read 1 .fastq (forward reads)
+        "-2", str(r2),                                            # Path to read 2 .fastq (reverse reads)
+        "-p", "8",                                                # Use 8 threads for parallel processing
+        "--validateMappings",                                     # Verify that mappings are consistent with transcript sequences
+        "-o", str(output_dir)                                     # Output directory
     ]
 
-    subprocess.run(quant_cmd, check=True)
-    print(f"Quantification complete for {sample}")
+    subprocess.run(quant_cmd, check=True)                         # Execute Salmon command; stop if command fails
+    print(f"Quantification complete for {sample}")                # Notify user
 
-# ------------ BUILD METADATA ------------ #
+# BUILD METADATA
 
-print("Generating metadata.csv...")
-# Build and save metadata with sample as index (for DESeq2)
-# Build and save metadata with sample as index (for DESeq2)
-metadata = pd.DataFrame({
-    "condition": [sample_conditions[sample] for sample in sample_names]
-}, index=sample_names)
-metadata.index.name = "sample"
-metadata_path = quant_dir / "metadata.csv"
-metadata.to_csv(metadata_path)
+print("Generating metadata.csv...")                               # Notify user
 
-print(f"Metadata saved to {metadata_path}")
+metadata = pd.DataFrame({                                         # Create pandas DataFrame
+    "condition": [sample_conditions[sample]                       # Loops through each sample in samples_names and looks up condition in sample_conditions
+                  for sample in sample_names]
+}, index=sample_names)                                            # Set row names (index) of DataFrame to match sample names
+metadata.index.name = "sample"                                    # Set index column name to "sample"
+metadata_path = quant_dir / "metadata.csv"                        # Create path where CSV will save
+metadata.to_csv(metadata_path)                                    # Save metadata DataFrame as CSV in created path
 
-# ------------ BUILD COUNT MATRIX (using tx2gene) ------------ #
+print(f"Metadata saved to {metadata_path}")                       # Notify user
 
-print("Building gene-level count matrix using tx2gene.csv...")
-tx2gene_df = pd.read_csv(tx2gene_path, names=["TXNAME", "GENEID"])
+# BUILD COUNT MATRIX USING TX2GENE
 
-count_dict = {}
-gene_set = set()
+print("Building gene-level count matrix using tx2gene.csv...")    # Notify user
+                                                                  # Note: DESeq2 runs at gene level -> need to aggregate transcript counts by gene
+tx2gene_df = pd.read_csv(tx2gene_path,                            # Read CSV into a pandas DataFrame
+                         names=["TXNAME", "GENEID"])              # Assign column names
 
-for sample in sample_names:
-    quant_file = salmon_out_dir / sample / "quant.sf"
-    quant_df = pd.read_csv(quant_file, sep="\t")[["Name", "NumReads"]]
+count_dict = {}                                                   # Create dictionary to store gene-level counts for each sample
+gene_set = set()                                                  # Initialize empty set to collect unique gene IDs for each sample
 
-    # Merge with tx2gene mapping
-    merged_df = quant_df.merge(tx2gene_df, left_on="Name", right_on="TXNAME")
+for sample in sample_names:                                       # Loop through each sample in samples_names
+    quant_file = salmon_out_dir / sample / "quant.sf"             # Create full path to Salmon output file
+    quant_df = pd.read_csv(quant_file,                            # Load quant.sf into pandas DataFrame, quant_df
+                                                                  # Note: quant.sf = tab-delimited
+                           sep="\t")[["Name", "NumReads"]]        # Keep only these two columns
 
-    # Group by GENEID and sum counts
-    gene_counts = merged_df.groupby("GENEID")["NumReads"].sum()
-    count_dict[sample] = gene_counts
-    gene_set.update(gene_counts.index)
+    merged_df = quant_df.merge(tx2gene_df,                        # Merge quant_df (only transcript IDs, read count) with tx2gene_df (maps transcript IDs to gene IDs)
+                               left_on="Name",                    # To get transcript IDs in quant_df, look at "Name" column
+                               right_on="TXNAME")                 # To get transcript IDs in tx2gene_df, look at "TXNAME" column
 
-# Combine all samples into one DataFrame
-all_genes = sorted(gene_set)
-count_matrix = pd.DataFrame(index=all_genes)
+    gene_counts = merged_df.groupby("GENEID")["NumReads"].sum()   # Group by GENEID and add all transcripts that map to that same GENEID (multiple transcripts per gene)
+                                                                  # gene_counts: index = gene ID, value = summed read count
+    count_dict[sample] = gene_counts                              # Store gene-level counts from gene_counts in count_dict dictionary under sample name key
+    gene_set.update(gene_counts.index)                            # Add all gene IDs in sample quantification to gene_set  
+                                                                  # Note: .update avoids duplicates; gene_set = all unique gene IDs across all samples
 
-for sample in sample_names:
-    count_matrix[sample] = count_dict[sample].reindex(all_genes, fill_value=0)
+all_genes = sorted(gene_set)                                      # Sort the full list of gene IDs from the set alphabetically
+count_matrix = pd.DataFrame(index=all_genes)                      # Initialize new empty DataFrame where the row index is a sorted list of gene IDs
 
-count_matrix.index.name = "gene"
-count_matrix_path = quant_dir / "count_matrix.csv"
-count_matrix.to_csv(count_matrix_path)
-print(f"Gene-level count matrix saved to {count_matrix_path}")
+for sample in sample_names:                                       # Loop through each sample in sample_names
+    count_matrix[sample] = count_dict[sample].reindex(all_genes, fill_value=0) # Adds column to count_matrix with gene counts from count_dict
+                                                                  # Component Breakdown:
+                                                                  # count_dict[sample] = panda Series of gene-level counts for one sample (index = gene IDs, only genes with reads in that sample are present)
+                                                                  # reindex(all_genes, fill_value=0) = reorder and align panda Series to full list of genes; missing genes (not in this sample) get a value of 0
+                                                                  # Note: ensures that every gene appears in every sample even if count is zero
+                                                                  # count_matrix[sample] = assign reindexed Series as a new column in count_matrix labeled with sample name
+
+count_matrix.index.name = "gene"                                  # Set name of index column in DataFrame to "gene"
+count_matrix_path = quant_dir / "count_matrix.csv"                # Create path to where matrix will save
+count_matrix.to_csv(count_matrix_path)                            # Convert DataFrame to CSV
+print(f"Gene-level count matrix saved to {count_matrix_path}")    # Notify user
