@@ -8,26 +8,27 @@ import subprocess                                                 # subprocess =
 import shutil                                                     # shutil = to verify tools before running commands
 from pathlib import Path                                          # Path = to get file locations, create directories, exc.
 
-# ------------ CONFIGURATION ------------ #
+# SET WORKING DIRECTORIES
+root_dir = Path(__file__).resolve().parents[1]                    # Get absolute path to root directory
+                                                                  # __file__ = path to current script
+                                                                  # resolve() = full absolute path
+                                                                  # .parents[1] = go up one level from project folder
+quant_dir = root_dir / "quantification"                           # Define folder for quantification
+fastq_dir = root_dir / "preprocessing" / "trimmed_data"           # Define folder where trimmed .fastq files saved (in script 01)
+index_dir = quant_dir / "salmon_index"                            # Define folder for Salmon index in quantification folder
+salmon_out_dir = quant_dir / "salmon_output"                      # Define folder for Salmon output in quantification folder
+salmon_out_dir.mkdir(parents=True, exist_ok=True)                 # Create salmon_outut and parents if doesn't exist yet
 
-# Set working directories
-root_dir = Path(__file__).resolve().parents[1]  # Project root
-quant_dir = root_dir / "quantification"
-fastq_dir = root_dir / "preprocessing" / "trimmed_data" # Adjust as needed
-index_dir = quant_dir / "salmon_index"
-salmon_out_dir = quant_dir / "salmon_output"
-salmon_out_dir.mkdir(parents=True, exist_ok=True)
-
-# Input files and sample names
-sra_runs = [
+# INPUT FILES AND SAMPLE NAMES
+sra_runs = [                                                      # List of SRR IDs (sra_runs)
     "SRR16966869", "SRR16966870", "SRR16966871",
     "SRR16966872", "SRR16966873", "SRR16966874"
 ]
-sample_names = sra_runs
-
-# Mapping sample names to experimental conditions
-sample_conditions = {
-    "SRR16966869": "control",
+sample_names = sra_runs                                           # Make second list but assign nane sample_names
+                                                                  # Preserve raw sequencing run IDs (sra_runs) and sample_names if renamed
+# MAP SAMPLE NAMES TO EXPERIMENTAL CONDITIONS 
+sample_conditions = {                                             # SRR ID either maps to "control" or "dozi_ko"
+    "SRR16966869": "control",    
     "SRR16966870": "control",
     "SRR16966871": "control",
     "SRR16966872": "dozi_ko",
@@ -35,29 +36,29 @@ sample_conditions = {
     "SRR16966874": "dozi_ko"
 }
 
-# Reference transcriptome
-transcriptome_fasta = root_dir / "reference" / "Pfalciparum_transcripts.fa"
+# REFERENCE TRANSCRIPTOME
+transcriptome_fasta = root_dir / "reference" / "Pfalciparum_transcripts.fa" # Path to reference transcriptome fasta
 
-# ------------ BUILD TX2GENE ------------ #
+# BUILD TX2GENE
+tx2gene_path = root_dir / "reference" / "tx2gene.csv"             # Set path to transcript-to-gene mapping
+if not tx2gene_path.exists():                                     # Don't make file if already exists 
+    print("Generating tx2gene.csv from FASTA headers...")         # Notify user
+    tx2gene = []                                                  # Create empty list                       
+    with open(transcriptome_fasta, 'r') as fasta:                 # Open FASTA containing transcriptome sequences
+        for line in fasta:                                        # Loop through each line in .fa
+            if line.startswith(">"):                              # Just process header lines
+                header = line.strip().split()[0][1:]              # Get transcript ID (isoform) and remove carat
+                gene_id = header.split(".")[0]                    # Get gene ID (gene root) and remove the isoform value
+                tx2gene.append((header, gene_id))                 # Add the transcript and gene IDs to the list
+    pd.DataFrame(tx2gene,                                         # tx2gene is list of tuples
+                 columns=["TXNAME", "GENEID"]).to_csv(tx2gene_path, # Name columns for transcript and gene IDs and write to CSV
+                                            index=False)          # Don't write row numbers
+    print(f"Saved: {tx2gene_path}")                               # Notify user
 
-tx2gene_path = root_dir / "reference" / "tx2gene.csv"
-if not tx2gene_path.exists():
-    print("📄 Generating tx2gene.csv from FASTA headers...")
-    tx2gene = []
-    with open(transcriptome_fasta, 'r') as fasta:
-        for line in fasta:
-            if line.startswith(">"):
-                header = line.strip().split()[0][1:]
-                gene_id = header.split(".")[0]
-                tx2gene.append((header, gene_id))
-    pd.DataFrame(tx2gene, columns=["TXNAME", "GENEID"]).to_csv(tx2gene_path, index=False)
-    print(f"Saved: {tx2gene_path}")
-
-# ------------ RUN SALMON QUANTIFICATION ------------ #
-
-print("🧬 Running Salmon quantification...")
-for sample in sample_names:
-    r1 = fastq_dir / f"trimmed_{sample}_1.fastq"
+# RUN SALMON QUANTIFICATION
+print("Running Salmon quantification...")                         # Notify user
+for sample in sample_names:                                       # Loop through list of sample IDs
+    r1 = fastq_dir / f"trimmed_{sample}_1.fastq"                  # 
     r2 = fastq_dir / f"trimmed_{sample}_2.fastq"
     output_dir = salmon_out_dir / sample
 
@@ -80,7 +81,7 @@ for sample in sample_names:
 
 # ------------ BUILD METADATA ------------ #
 
-print("📄 Generating metadata.csv...")
+print("Generating metadata.csv...")
 # Build and save metadata with sample as index (for DESeq2)
 # Build and save metadata with sample as index (for DESeq2)
 metadata = pd.DataFrame({
