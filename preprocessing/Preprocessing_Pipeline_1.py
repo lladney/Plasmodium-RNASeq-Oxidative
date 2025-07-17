@@ -24,61 +24,80 @@ os.environ['PATH']                                              # PATH stores li
 # CONNECT TO SRA
 db = SRAweb()                                                   # Connect to NCBI SRA; assign to db
 
-geo_id = "GSE189034"                                            # Set GEO Series Accession to variable geo_id
+geo_id = "GSE189034"                                            # Set GEO Series Accession to geo_id
 
-try:
+try:                                                            # Let's see if this works
     # Try to fetch SRA project(s) from GEO
-    gse_info = db.gse_to_srp(geo_id)
+    gse_info = db.gse_to_srp(geo_id)                            # Query SRA database (db) to convert GEO accession (geo_id) into SRA project accessions (SRP IDs)
+                                                                # Store SRP IDs in gse_info
+    
+    if gse_info is not None and not gse_info.empty:             # Must pass 2 conditions:
+                                                                # 1) gse_info is not None (no SRP IDs)
+                                                                # 2) gse_info is not empty (bare DataFrame)
+        print("Returned columns:", gse_info.columns.tolist())   # List out column names in DataFrame
+        print(gse_info)                                         # Prints DataFrame with SRP IDs
 
-    if gse_info is not None and not gse_info.empty:
-        print("Returned columns:", gse_info.columns.tolist())
-        print(gse_info)
+        if 'study_accession' in gse_info.columns:               # Check whether study_accession column exists in gse_info DataFrame
+                                                                # If yes, continue with metadata extraction/download
+                                                                # If no, bypass and print error message to user
+            srp_id = gse_info['study_accession'].values[0]      # Extract SRP ID from study_accession column and store it srp_id
+                                                                # Component breakdown:
+                                                                # gse_info['study_accession'] = get the whole study_accession column
+                                                                # .values = convert to NumPy array
+                                                                # [0] = access first entry
+            print("Selected SRA Project:", srp_id)              # Print SRP ID so user can confirm    
 
-        if 'study_accession' in gse_info.columns:
-            srp_id = gse_info['study_accession'].values[0]
-            print("Selected SRA Project:", srp_id)
+            # GET METADATA
+            metadata = db.sra_metadata(srp_id,                  # Get metadata from SRP ID
+                                       detailed=True)           # Return metadata with detailed output  
+            metadata.to_csv(f"{srp_id}_metadata.csv",           # Save SRA metadata DataFrame to CSV with SRP ID in name
+                            index=False)                        # Don't write row numbers
+            print(f"Metadata saved to {srp_id}_metadata.csv")   # Inform user
 
-            # Fetch metadata
-            metadata = db.sra_metadata(srp_id, detailed=True)
-            metadata.to_csv(f"{srp_id}_metadata.csv", index=False)
-            print(f"Metadata saved to {srp_id}_metadata.csv")
+            # DOWNLOAD AND PREPROCESS
 
-            # ------------------------------
-            # Step 2: Download & Preprocess
-            # ------------------------------
+            # CHECK FOR REQUIRED TOOLS
+            required_tools = ["prefetch",                       # prefetch = downloads .sra files from NCBI SRA
+                              "fasterq-dump",                   # fasterq-dump = convert .sra -> .fastq
+                              "fastqc",                         # fastqc = quality control on .fastq files
+                              "multiqc",                        # multiqc = put QC from fastqc into HTML summary
+                              "cutadapt"]                       # cutadapt = trim adapter sequences, low-quality bases, short reads (clean .fastq files)
+            
+            for tool in required_tools:                         # Loop through each tool in the required list
+                print(f"{tool} path:", shutil.which(tool))      # Return path to tool if available
 
-            # Check for required tools
-            required_tools = ["prefetch", "fasterq-dump", "fastqc", "multiqc", "cutadapt"]
-            #
-            for tool in required_tools:
-                print(f"{tool} path:", shutil.which(tool))
+            for tool in required_tools:                         # Loop through each tool in the required list
+                if shutil.which(tool) is None:                  # If tool is not available, stop
+                    raise EnvironmentError("Required tool '{tool}' not found in PATH. Please install it.") # Returns error to let user know which tool(s) need to be installed
 
-            #
-            for tool in required_tools:
-                if shutil.which(tool) is None:
-                    raise EnvironmentError("Required tool '{tool}' not found in PATH. Please install it.")
-
-            # Extract run accessions (SRR IDs)
-            # sra_runs = metadata['run_accession'].tolist()
-            sra_runs = [
+            # EXTRACT RUN ACCESSIONS (SRR IDS) 
+            # sra_runs = metadata['run_accession'].tolist()     # Can get SRR IDs this way but want to run pipeline with smaller subset of data for time purposes
+            sra_runs = [                                        # Manual list of SRR IDs from chosen SRA
                 "SRR16966869", "SRR16966870", "SRR16966871",
                 "SRR16966872", "SRR16966873", "SRR16966874"
             ]
-
             
-            # Create directories
-            os.makedirs("raw_data", exist_ok=True)
-            os.makedirs("trimmed_data", exist_ok=True)
-            os.chdir("raw_data")
+            # CREATE DIRECTORIES
+            os.makedirs("raw_data",                             # Make raw_data directory
+                        exist_ok=True)                          # If already exists, move on
+            os.makedirs("trimmed_data",                         # Make trimmed_data directory
+                        exist_ok=True)                          # If already exists, move on
+            os.chdir("raw_data")                                # Change working directory to raw_data
 
-            # Download and convert SRA to FASTQ
-            for run in sra_runs:
-                print(f"Downloading {run}...")
-                subprocess.run(["prefetch", run], check=True)
-                subprocess.run(["fasterq-dump", run, "--split-files", "--threads", "4"], check=True)
+            # DOWNLOAD AND CONVERT SRA TO FASTQ
+            for run in sra_runs:                                # Loop through each SRR ID in sra_runs list
+                print(f"Downloading {run}...")                  # Print to user which SRR ID currently being processed
+                subprocess.run(["prefetch", run],               # Run prefetch to download .sra file for that SRR ID
+                               check=True)                      # If download fails, stop
+                
+                subprocess.run(["fasterq-dump", run,            # Convert downloaded .sra -> .fastq 
+                                "--split-files",                # Split paired-end reads into 2 separate files
+                                "--threads", "4"],              # Let's speed this up by using 4 threads
+                               check=True)                      # Stop if conversion fails
 
-            # Run FastQC on raw FASTQ files
-            fastq_files = [f for f in os.listdir(".") if f.endswith(".fastq")]
+            # RUN FASTQC ON RAW FASTQ FILES 
+            fastq_files = [f for f in os.listdir(".")           # 
+                           if f.endswith(".fastq")]
             print("Running FastQC on raw FASTQ files...")
             subprocess.run(["fastqc"] + fastq_files, check=True)
             
