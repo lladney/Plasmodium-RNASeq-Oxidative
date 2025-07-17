@@ -1,22 +1,30 @@
-# This script handles GEO-to-SRA conversion, metadata extraction,
-# FASTQ download, preprocessing (trimming), and quality control (FastQC + MultiQC)
-import os
-from pysradb.sraweb import SRAweb
-import pandas as pd
-import subprocess
-import shutil
+# Plasmodium RNA-seq Analysis for Oxidative Stress Profiling
+# Step 1: GEO-to-SRA conversion, metadata extraction, FASTQ download,...
+# ...preprocessing (trimming), and quality control (FastQC + MultiQC)
 
-# PATH setup for Conda-installed tools
-os.environ['PATH'] += (
-    f":{os.environ['CONDA_PREFIX']}/bin"
-    ":/Users/laraladney/Downloads/FastQC"
+# LIBRARIES
+import os                                                       # os = to interact with operating system
+from pysradb.sraweb import SRAweb                               # SRAweb = to query metadata from GEO and SRA
+import pandas as pd                                             # pandas = to conduct data analysis/manipulation
+import subprocess                                               # subprocess = to run external commands from Python (i.e., prefetch, cutadapt)
+import shutil                                                   # shutil = to verify tools before running commands
+
+# PATH SETUP FOR CONDA TOOLS
+os.environ['PATH']                                              # PATH stores list of directories; os.environ yields current list of folders Python searches
+    += (                                                        # Appends additional directories
+    f":{os.environ['CONDA_PREFIX']}/bin"                        # When external tools called, Python knows where to find them
+                                                                # Component breakdoown:
+                                                                # os.environ['CONDA_PREFIX'] = root directory of current Conda environment
+                                                                # /bin = targets folder where Conda-installed command-line tools are
+                                                                # f = tell Python to treat string as executable
+                                                                # Note: need ":" because it separates directories when multiple
+    ":/Users/laraladney/Downloads/FastQC"                       # User has to modify this to location where FastQC is installed
 )
 
-# Connect to SRA
-db = SRAweb()
+# CONNECT TO SRA
+db = SRAweb()                                                   # Connect to NCBI SRA; assign to db
 
-# Replace with a valid GEO Series accession
-geo_id = "GSE189034"
+geo_id = "GSE189034"                                            # Set GEO Series Accession to variable geo_id
 
 try:
     # Try to fetch SRA project(s) from GEO
